@@ -5,8 +5,8 @@
 
 Сценарий:
   1. Считаем SHA-256 файлов в Files/  ->  HashList.txt
-  2. Запускаем Linux-утилиту ./FC (она интерактивно запрашивает номер варианта
-     и изменяет часть файлов)
+  2. Запускаем Linux-утилиту ./FC ВНУТРИ Files/ (она интерактивно
+     запрашивает номер варианта и изменяет часть файлов)
   3. Пересчитываем хеши
   4. Все файлы, чей хеш изменился, считаем «заражёнными»
      и записываем их новые хеши в VirusHashList.txt
@@ -24,15 +24,13 @@ import sys
 
 # ---------- Конфигурация ----------
 WORK_DIR     = "Files"           # папка с тестовыми файлами
-FC_BIN       = "./FC"            # Linux-утилита, изменяющая файлы
+FC_BIN       = "./FC"            # Linux-утилита (относительно корня проекта)
 HASH_LIST    = "HashList.txt"
 VIRUS_LIST   = "VirusHashList.txt"
 REPORT       = "report.txt"
 BLOCK_SIZE   = 65536
 
-# Номер варианта в списке группы (по умолчанию — 13).
-# Можно переопределить аргументом:  python3 antivirus.py --variant 7
-DEFAULT_VARIANT = 13
+DEFAULT_VARIANT = 13             # номер варианта в списке группы
 
 
 # ---------- Утилиты ----------
@@ -81,37 +79,41 @@ def read_hashes(path: str) -> dict:
     return result
 
 
-def run_fc(variant: int) -> None:
+def run_fc(variant: int, work_dir: str) -> None:
     """
-    Запускает Linux-утилиту FC и передаёт ей номер варианта в stdin.
+    Запускает Linux-утилиту FC ВНУТРИ рабочей директории (work_dir),
+    чтобы она изменяла файлы именно в Files/.
 
-    FC работает интерактивно:
-        Программа изменяет исходные файлы
-        Выберите вариант от 1 до 25 (Номер в списке группы)
-        <ждёт ввод>
+    Ключевые моменты:
+      * используем АБСОЛЮТНЫЙ путь к бинарнику — иначе './FC'
+        не найдётся, так как cwd мы меняем на Files/;
+      * передаём номер варианта через stdin;
+      * cwd=work_dir — FC ищет файлы в текущей директории.
     """
-    if not os.path.exists(FC_BIN):
-        print(f"[!] Утилита '{FC_BIN}' не найдена.")
+    fc_path = os.path.abspath(FC_BIN)
+
+    if not os.path.exists(fc_path):
+        print(f"[!] Утилита '{fc_path}' не найдена.")
         sys.exit(1)
 
     # Делаем исполняемой (на случай, если права сбиты)
     try:
-        os.chmod(FC_BIN, 0o755)
+        os.chmod(fc_path, 0o755)
     except OSError:
         pass
 
-    print(f"[2] Запуск утилиты {FC_BIN} (вариант {variant}) ...")
+    print(f"[2] Запуск {FC_BIN} (вариант {variant}) в '{work_dir}' ...")
 
-    # Передаём ввод: "13\n" — как если бы пользователь набрал его вручную
     result = subprocess.run(
-        [FC_BIN],
-        input=f"{variant}\n",
+        [fc_path],                       # абсолютный путь
+        input=f"{variant}\n",            # ответ на «Выберите вариант...»
         capture_output=True,
         text=True,
-        timeout=120,   # страховка от зависания
+        timeout=120,
+        cwd=work_dir,                    # <-- FC работает внутри Files/
     )
 
-    # Покажем, что вывела FC (полезно для отладки)
+    # Показываем вывод FC
     if result.stdout.strip():
         for line in result.stdout.strip().splitlines():
             print(f"    [FC] {line}")
@@ -145,8 +147,7 @@ def main() -> None:
 
     work_dir = args.dir
     if not os.path.isdir(work_dir):
-        print(f"[!] Папка '{work_dir}' не найдена. "
-              f"Поместите туда файлы 1.txt ... 10.txt.")
+        print(f"[!] Папка '{work_dir}' не найдена.")
         sys.exit(1)
 
     files = get_files(work_dir)
@@ -163,8 +164,8 @@ def main() -> None:
     origin = write_hashes(files, work_dir, HASH_LIST)
     print(f"    -> {HASH_LIST}")
 
-    # --- Шаг 2. Запуск FC с передачей номера варианта ---
-    run_fc(args.variant)
+    # --- Шаг 2. Запуск FC (внутри work_dir) ---
+    run_fc(args.variant, work_dir)
 
     # --- Шаг 3. Пересчёт хешей после FC ---
     print("[3] Пересчёт хешей после FC...")
