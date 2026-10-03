@@ -5,7 +5,8 @@
 
 Сценарий:
   1. Считаем SHA-256 файлов в Files/  ->  HashList.txt
-  2. Запускаем Linux-утилиту ./FC (она изменяет часть файлов)
+  2. Запускаем Linux-утилиту ./FC (она интерактивно запрашивает номер варианта
+     и изменяет часть файлов)
   3. Пересчитываем хеши
   4. Все файлы, чей хеш изменился, считаем «заражёнными»
      и записываем их новые хеши в VirusHashList.txt
@@ -15,23 +16,28 @@
         Infected:    <изменившиеся и попавшие в блек-лист>
   6. Удаляем infected-файлы
 """
+import argparse
 import hashlib
 import os
 import subprocess
 import sys
 
 # ---------- Конфигурация ----------
-WORK_DIR     = "Files"          # папка с тестовыми файлами
-FC_BIN       = "./FC"           # Linux-утилита, изменяющая файлы
+WORK_DIR     = "Files"           # папка с тестовыми файлами
+FC_BIN       = "./FC"            # Linux-утилита, изменяющая файлы
 HASH_LIST    = "HashList.txt"
 VIRUS_LIST   = "VirusHashList.txt"
 REPORT       = "report.txt"
 BLOCK_SIZE   = 65536
 
+# Номер варианта в списке группы (по умолчанию — 13).
+# Можно переопределить аргументом:  python3 antivirus.py --variant 7
+DEFAULT_VARIANT = 13
+
 
 # ---------- Утилиты ----------
 def compute_sha256(file_path: str) -> str:
-    """Блочное вычисление SHA-256 (для больших файлов)."""
+    """Блочное вычисление SHA-256 (подходит для больших файлов)."""
     h = hashlib.sha256()
     with open(file_path, "rb") as f:
         for chunk in iter(lambda: f.read(BLOCK_SIZE), b""):
@@ -40,7 +46,7 @@ def compute_sha256(file_path: str) -> str:
 
 
 def get_files(directory: str) -> list:
-    """Список .txt-файлов в директории (отсортирован по имени)."""
+    """Список .txt-файлов в директории (натуральная сортировка)."""
     def sort_key(name):
         base = os.path.splitext(name)[0]
         return (0, int(base)) if base.isdigit() else (1, base)
@@ -75,8 +81,15 @@ def read_hashes(path: str) -> dict:
     return result
 
 
-def run_fc() -> None:
-    """Запускает Linux-утилиту FC в текущей директории (там, где Files/)."""
+def run_fc(variant: int) -> None:
+    """
+    Запускает Linux-утилиту FC и передаёт ей номер варианта в stdin.
+
+    FC работает интерактивно:
+        Программа изменяет исходные файлы
+        Выберите вариант от 1 до 25 (Номер в списке группы)
+        <ждёт ввод>
+    """
     if not os.path.exists(FC_BIN):
         print(f"[!] Утилита '{FC_BIN}' не найдена.")
         sys.exit(1)
@@ -87,46 +100,77 @@ def run_fc() -> None:
     except OSError:
         pass
 
-    print(f"[2] Запуск утилиты {FC_BIN} ...")
-    result = subprocess.run([FC_BIN], capture_output=True, text=True)
+    print(f"[2] Запуск утилиты {FC_BIN} (вариант {variant}) ...")
 
+    # Передаём ввод: "13\n" — как если бы пользователь набрал его вручную
+    result = subprocess.run(
+        [FC_BIN],
+        input=f"{variant}\n",
+        capture_output=True,
+        text=True,
+        timeout=120,   # страховка от зависания
+    )
+
+    # Покажем, что вывела FC (полезно для отладки)
     if result.stdout.strip():
-        print("    FC stdout:", result.stdout.strip())
+        for line in result.stdout.strip().splitlines():
+            print(f"    [FC] {line}")
     if result.stderr.strip():
-        print("    FC stderr:", result.stderr.strip())
+        for line in result.stderr.strip().splitlines():
+            print(f"    [FC:err] {line}")
+
     if result.returncode != 0:
         print(f"[!] FC завершилась с кодом {result.returncode}")
+        sys.exit(1)
 
 
 # ---------- Основной сценарий ----------
 def main() -> None:
-    if not os.path.isdir(WORK_DIR):
-        print(f"[!] Папка '{WORK_DIR}' не найдена. "
+    parser = argparse.ArgumentParser(
+        description="Простейший файловый антивирус (hash-scan)."
+    )
+    parser.add_argument(
+        "-v", "--variant", type=int, default=DEFAULT_VARIANT,
+        help=f"Номер варианта в списке группы (1..25). По умолчанию {DEFAULT_VARIANT}."
+    )
+    parser.add_argument(
+        "-d", "--dir", default=WORK_DIR,
+        help=f"Папка с тестовыми файлами. По умолчанию '{WORK_DIR}'."
+    )
+    args = parser.parse_args()
+
+    if not (1 <= args.variant <= 25):
+        print(f"[!] Номер варианта должен быть в диапазоне 1..25, получено {args.variant}")
+        sys.exit(1)
+
+    work_dir = args.dir
+    if not os.path.isdir(work_dir):
+        print(f"[!] Папка '{work_dir}' не найдена. "
               f"Поместите туда файлы 1.txt ... 10.txt.")
         sys.exit(1)
 
-    files = get_files(WORK_DIR)
+    files = get_files(work_dir)
     if not files:
-        print(f"[!] В '{WORK_DIR}' нет .txt-файлов.")
+        print(f"[!] В '{work_dir}' нет .txt-файлов.")
         sys.exit(1)
 
+    print(f"[i] Рабочая папка: {work_dir}")
+    print(f"[i] Вариант: {args.variant}")
     print(f"[i] Найдено файлов: {len(files)} -> {files}")
 
     # --- Шаг 1. Исходные хеши ---
     print("[1] Вычисление исходных хешей...")
-    origin = write_hashes(files, WORK_DIR, HASH_LIST)
+    origin = write_hashes(files, work_dir, HASH_LIST)
     print(f"    -> {HASH_LIST}")
 
-    # --- Шаг 2. Запуск FC (Linux-утилита) ---
-    run_fc()
+    # --- Шаг 2. Запуск FC с передачей номера варианта ---
+    run_fc(args.variant)
 
     # --- Шаг 3. Пересчёт хешей после FC ---
     print("[3] Пересчёт хешей после FC...")
-    after = {name: compute_sha256(os.path.join(WORK_DIR, name)) for name in files}
+    after = {name: compute_sha256(os.path.join(work_dir, name)) for name in files}
 
     # --- Шаг 4. Формируем VirusHashList.txt из ИЗМЕНИВШИХСЯ файлов ---
-    #     Мы не знаем заранее, что меняет FC, поэтому все изменения
-    #     трактуем как потенциальное заражение.
     print("[4] Формирование VirusHashList.txt из изменившихся файлов...")
     changed_names = [n for n in files if origin[n] != after[n]]
 
@@ -137,12 +181,6 @@ def main() -> None:
     print(f"    -> {VIRUS_LIST}")
 
     # --- Шаг 5. Классификация ---
-    #     infected = изменился И его новый хеш есть в блек-листе
-    #     changed  = изменился, но в блек-лист не попал
-    #
-    #     В нашем сценарии все изменившиеся файлы автоматически
-    #     попадают в блек-лист, поэтому все они будут «infected».
-    #     Это корректно для учебной задачи: FC = «вирус», изменённые файлы = «заражённые».
     virus_hashes = set(read_hashes(VIRUS_LIST).values())
 
     changed, infected = [], []
@@ -171,7 +209,7 @@ def main() -> None:
     # --- Шаг 7. Удаление infected ---
     print("[6] Удаление заражённых файлов...")
     for name in infected:
-        os.remove(os.path.join(WORK_DIR, name))
+        os.remove(os.path.join(work_dir, name))
         print(f"    Удалён: {name}")
 
     # --- Итог ---
