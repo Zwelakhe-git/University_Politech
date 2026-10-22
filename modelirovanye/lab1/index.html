@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Задание 3 — векторная графика</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #111; }
+    canvas { display: block; }
+  </style>
+  <link href="./css/styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="task-nav">
+        <ul class="pad-0 d-flex gap-3 list-no-deco">
+            <li class="nav-item active" id="task1-link">Task 1</li>
+            <li class="nav-item" id="task2-link">Task 2</li>
+            <li class="nav-item" id="task3-link">Task 3</li>
+            <li class="nav-item" id="task4-link">Task 4</li>
+        </ul>
+    </div>
+    <div>
+        <!-- <div id="segments-regulator">
+          <label for="segments-inp">segments</label>
+          <input id="segments-inp" data-mesh-id="1" type="range" min="0" max="100"/>
+        </div> -->
+    </div>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module" src="./init.js"></script>
+<script type="module" src="./task1.js"></script>
+<script type="module" src="./run.js"></script>
+</body>
+</html>

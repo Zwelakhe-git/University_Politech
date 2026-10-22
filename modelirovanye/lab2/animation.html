@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Анимация трансформаций</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #111; font-family: system-ui; color: #eee; }
+    canvas { display: block; }
+    #ui {
+      position: fixed; top: 12px; left: 12px;
+      background: rgba(20,20,20,0.85); padding: 14px 16px; border-radius: 10px;
+      border: 1px solid #333; font-size: 13px;
+    }
+    #ui button {
+      padding: 8px 14px; margin-top: 8px;
+      background: #2a4; color: #fff; border: none; border-radius: 6px;
+      cursor: pointer; font-weight: 600;
+    }
+    #ui button:hover { background: #3c6; }
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <div>Куб — вращение</div>
+    <div>Сфера — движение по кругу</div>
+    <div>Тор — пульсация масштаба</div>
+    <button id="run">▶ Запустить сценарий</button>
+  </div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// --- Сцена ---
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x111111);
+
+const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 1000);
+camera.position.set(7, 6, 10);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(devicePixelRatio);
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+// --- Свет ---
+scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+const light = new THREE.PointLight(0xffffff, 1.5);
+light.position.set(5, 8, 5);
+scene.add(light);
+
+scene.add(new THREE.AxesHelper(3));
+
+// --- Куб (вращение) ---
+const cube = new THREE.Mesh(
+  new THREE.BoxGeometry(1.5, 1.5, 1.5),
+  new THREE.MeshPhongMaterial({ color: 0x44aaff, shininess: 60 })
+);
+cube.position.set(-3, 0, 0);
+scene.add(cube);
+
+// --- Сфера (движение по кругу) ---
+const sphere = new THREE.Mesh(
+  new THREE.SphereGeometry(0.8, 32, 24),
+  new THREE.MeshPhongMaterial({ color: 0xff8844, shininess: 80 })
+);
+scene.add(sphere);
+
+// --- Тор (пульсация масштаба) ---
+const torus = new THREE.Mesh(
+  new THREE.TorusGeometry(0.9, 0.3, 20, 48),
+  new THREE.MeshPhongMaterial({ color: 0xff44aa, shininess: 100 })
+);
+torus.position.set(3, 0, 0);
+scene.add(torus);
+
+// ============================================================
+// Вспомогательные функции для анимации
+// ============================================================
+function animateTween({ duration, onUpdate, onComplete }) {
+  const start = performance.now();
+  function step() {
+    const t = Math.min((performance.now() - start) / duration, 1);
+    const e = t * t * (3 - 2 * t);   // smoothstep
+    onUpdate(e);
+    if (t < 1) requestAnimationFrame(step);
+    else onComplete?.();
+  }
+  step();
+}
+
+function rotateTo(mesh, axis, target, duration) {
+  return new Promise(r => {
+    const from = mesh.rotation[axis];
+    animateTween({
+      duration,
+      onUpdate: e => { mesh.rotation[axis] = from + (target - from) * e; },
+      onComplete: r
+    });
+  });
+}
+
+function moveTo(mesh, target, duration) {
+  return new Promise(r => {
+    const from = mesh.position.clone();
+    animateTween({
+      duration,
+      onUpdate: e => { mesh.position.lerpVectors(from, target, e); },
+      onComplete: r
+    });
+  });
+}
+
+function scaleTo(mesh, target, duration) {
+  return new Promise(r => {
+    const from = mesh.scale.clone();
+    animateTween({
+      duration,
+      onUpdate: e => { mesh.scale.lerpVectors(from, target, e); },
+      onComplete: r
+    });
+  });
+}
+
+// ============================================================
+// Сценарий: последовательность трансформаций
+// ============================================================
+let running = false;
+async function runScenario() {
+  if (running) return;
+  running = true;
+
+  // 1. Куб: повернуть на 180° вокруг Y, потом вернуть
+  await rotateTo(cube, 'y', cube.rotation.y + Math.PI, 1200);
+  await rotateTo(cube, 'y', cube.rotation.y + Math.PI, 1200);
+
+  // 2. Сфера: переместить в точку (0, 2, 0), увеличить в 1.5 раза
+  await Promise.all([
+    moveTo(sphere, new THREE.Vector3(0, 2, 0), 1000),
+    scaleTo(sphere, new THREE.Vector3(1.5, 1.5, 1.5), 1000)
+  ]);
+
+  // 3. Тор: повернуть на 90° вокруг X и сдвинуть по Z
+  await Promise.all([
+    rotateTo(torus, 'x', torus.rotation.x + Math.PI / 2, 1000),
+    moveTo(torus, new THREE.Vector3(3, 0, 2), 1000)
+  ]);
+
+  // 4. Вернуть всё назад
+  await Promise.all([
+    moveTo(sphere, new THREE.Vector3(0, 0, 0), 1000),
+    scaleTo(sphere, new THREE.Vector3(1, 1, 1), 1000),
+    moveTo(torus, new THREE.Vector3(3, 0, 0), 1000)
+  ]);
+
+  running = false;
+}
+
+document.getElementById('run').addEventListener('click', runScenario);
+
+// ============================================================
+// Основной цикл (постоянные анимации)
+// ============================================================
+const clock = new THREE.Clock();
+let t = 0;
+
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = clock.getDelta();
+  t += dt;
+
+  // Куб — постоянное вращение
+  cube.rotation.x += dt * 0.8;
+  cube.rotation.y += dt * 0.5;
+
+  // Сфера — движение по кругу в плоскости XZ
+  if (!running) {
+    sphere.position.x = Math.cos(t * 0.9) * 2.5;
+    sphere.position.z = Math.sin(t * 0.9) * 2.5;
+  }
+
+  // Тор — пульсация масштаба
+  if (!running) {
+    const s = 1 + Math.sin(t * 2.5) * 0.25;
+    torus.scale.set(s, s, s);
+  }
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+// --- Resize ---
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>
