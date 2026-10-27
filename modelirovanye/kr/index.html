@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Задание 3 — система частиц</title>
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #111;
+      font-family: Arial, sans-serif;
+      color: white;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    #controls {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 260px;
+      padding: 16px;
+      background: rgba(20, 25, 35, 0.9);
+      border: 1px solid #22aa88;
+      border-radius: 10px;
+    }
+
+    #controls h3 {
+      margin: 0 0 14px;
+    }
+
+    #strength_slider {
+      width: 100%;
+      accent-color: #22aa88;
+    }
+
+    #strength_text {
+      color: #22aa88;
+      font-weight: bold;
+    }
+
+    .hint {
+      color: #aaa;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+    #pause_button {
+        margin-top: 12px;
+        width: 100%;
+        padding: 9px;
+        border: none;
+        border-radius: 6px;
+        background: #22aa88;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    #pause_button:hover {
+        background: #18896d;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="controls">
+    <h3>Управление аттрактором</h3>
+
+    <label for="strength_slider">
+      Сила притяжения:
+      <span id="strength_text">4</span>
+    </label>
+
+    <input
+      id="strength_slider"
+      type="range"
+      min="0"
+      max="20"
+      step="0.5"
+      value="4"
+    >
+    
+    <button id="pause_button" type="button">Пауза</button>
+
+    <div class="hint">
+      Перемещай ползунок, чтобы изменить силу притяжения.
+      Также работают клавиши + и -.
+    </div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module" src="./init_scene.js"></script>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
