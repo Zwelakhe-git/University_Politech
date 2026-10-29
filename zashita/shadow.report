@@ -1,0 +1,20 @@
+
+File Report
+===============================================
+# date time file syscall success exe auid event
+===============================================
+1. 29.10.2026 09:46:09 /etc/ sendto yes /usr/sbin/auditctl sysadmin 96
+2. 29.10.2026 09:46:09 /etc/ sendto yes /usr/sbin/auditctl sysadmin 97
+3. 29.10.2026 09:48:42 /etc/group openat yes /usr/sbin/groupadd sysadmin 113
+4. 29.10.2026 09:48:42 /etc/ rename yes /usr/sbin/groupadd sysadmin 114
+5. 29.10.2026 09:48:51 /etc/passwd openat yes /usr/sbin/useradd sysadmin 119
+6. 29.10.2026 09:48:51 /etc/group openat yes /usr/sbin/useradd sysadmin 120
+7. 29.10.2026 09:48:51 /etc/shadow openat yes /usr/sbin/useradd sysadmin 121
+8. 29.10.2026 09:48:51 /etc/ rename yes /usr/sbin/useradd sysadmin 125
+9. 29.10.2026 09:48:51 /etc/ rename yes /usr/sbin/useradd sysadmin 126
+10. 29.10.2026 09:48:51 /etc/ rename yes /usr/sbin/useradd sysadmin 127
+11. 29.10.2026 09:49:24 /etc/passwd openat yes /usr/sbin/usermod sysadmin 131
+12. 29.10.2026 09:49:24 /etc/shadow openat yes /usr/sbin/usermod sysadmin 132
+13. 29.10.2026 09:49:24 /etc/group openat yes /usr/sbin/usermod sysadmin 133
+14. 29.10.2026 09:49:24 /etc/ rename yes /usr/sbin/usermod sysadmin 136
+15. 29.10.2026 09:49:52 /etc/ rename yes /usr/bin/passwd sysadmin 140
