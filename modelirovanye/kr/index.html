@@ -60,8 +60,85 @@
         cursor: pointer;
     }
 
+    .status {
+      margin-top: 8px;
+      font-size: 14px;
+    }
+
+    .status span {
+      color: #22aa88;
+      font-weight: bold;
+    }
+
     #pause_button:hover {
         background: #18896d;
+    }
+
+    #scene_controls {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 250px;
+      max-height: calc(100vh - 72px);
+      overflow-y: auto;
+      padding: 16px;
+      background: rgba(20, 25, 35, 0.9);
+      border: 1px solid #22aa88;
+      border-radius: 10px;
+    }
+
+    #scene_controls h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+
+    #scene_controls h3:not(:first-child) {
+      margin-top: 18px;
+    }
+
+    .knob-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .knob-row.two {
+      justify-content: space-around;
+    }
+
+    .axis-slider {
+      display: grid;
+      grid-template-columns: 18px 1fr 42px;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+
+    .axis-slider input {
+      width: 100%;
+      accent-color: #22aa88;
+    }
+
+    .axis-slider span:last-child {
+      color: #22aa88;
+      font-weight: bold;
+      text-align: right;
+    }
+
+    .small_button {
+      margin-top: 10px;
+      width: 100%;
+      padding: 6px;
+      border: 1px solid #22aa88;
+      border-radius: 6px;
+      background: transparent;
+      color: #22aa88;
+      cursor: pointer;
+    }
+
+    .small_button:hover {
+      background: rgba(34, 170, 136, 0.15);
     }
   </style>
 </head>
@@ -72,7 +149,7 @@
 
     <label for="strength_slider">
       Сила притяжения:
-      <span id="strength_text">4</span>
+      <span id="strength_text">6</span>
     </label>
 
     <input
@@ -81,14 +158,49 @@
       min="0"
       max="20"
       step="0.5"
-      value="4"
+      value="6"
     >
-    
+
     <button id="pause_button" type="button">Пауза</button>
 
+    <div class="status">Гравитация: <span id="gravity_text">выкл</span></div>
+    <div class="status">Следы: <span id="trails_text">вкл</span></div>
+
     <div class="hint">
-      Перемещай ползунок, чтобы изменить силу притяжения.
-      Также работают клавиши + и -.
+      <b>+ / −</b> — сила притяжения<br>
+      <b>G</b> — гравитация (доп. сила)<br>
+      <b>T</b> — показать/скрыть следы<br>
+      <b>Пробел</b> — пауза<br>
+      Мышь — вращение камеры
+    </div>
+  </div>
+
+  <div id="scene_controls">
+    <h3>Вращение эмиттера</h3>
+    <div class="knob-row" id="emitter_knobs"></div>
+    <button class="small_button" id="emitter_reset" type="button">Сбросить поворот</button>
+
+    <h3>Положение аттрактора</h3>
+    <div class="axis-slider">
+      <span>X</span>
+      <input id="attr_x" type="range" min="-8" max="8" step="0.1" value="0">
+      <span id="attr_x_text">0</span>
+    </div>
+    <div class="axis-slider">
+      <span>Y</span>
+      <input id="attr_y" type="range" min="-8" max="4" step="0.1" value="-4">
+      <span id="attr_y_text">-4</span>
+    </div>
+    <div class="axis-slider">
+      <span>Z</span>
+      <input id="attr_z" type="range" min="-8" max="8" step="0.1" value="0">
+      <span id="attr_z_text">0</span>
+    </div>
+    <div class="knob-row two" id="attractor_knobs"></div>
+    <button class="small_button" id="attractor_reset" type="button">Сбросить аттрактор</button>
+
+    <div class="hint">
+      Регулятор: тяните мышью, колесо — шаг 5°, двойной клик — 0°.
     </div>
   </div>
 
@@ -101,7 +213,6 @@
   }
   </script>
 
-  <script type="module" src="./init_scene.js"></script>
   <script type="module" src="./main.js"></script>
 </body>
 </html>
