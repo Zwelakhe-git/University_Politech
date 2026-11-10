@@ -1,0 +1,35 @@
+----
+type=PROCTITLE msg=audit(29.10.2026 09:46:09.161:97) : proctitle=auditctl -w /etc/shadow -p w -k etc_shadow 
+type=PATH msg=audit(29.10.2026 09:46:09.161:97) : item=0 name=/etc/ inode=652801 dev=08:01 mode=dir,755 ouid=root ogid=root rdev=00:00 nametype=PARENT cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0 
+type=CWD msg=audit(29.10.2026 09:46:09.161:97) : cwd=/root 
+type=SOCKADDR msg=audit(29.10.2026 09:46:09.161:97) : saddr={ saddr_fam=netlink nlnk-fam=16 nlnk-pid=0 } 
+type=SYSCALL msg=audit(29.10.2026 09:46:09.161:97) : arch=x86_64 syscall=sendto success=yes exit=1080 a0=0x4 a1=0x7fff1ef59f90 a2=0x438 a3=0x0 items=1 ppid=1146 pid=1249 auid=sysadmin uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=pts0 ses=2 comm=auditctl exe=/usr/sbin/auditctl subj==unconfined key=(null) 
+type=CONFIG_CHANGE msg=audit(29.10.2026 09:46:09.161:97) : auid=sysadmin ses=2 subj==unconfined op=add_rule key=etc_shadow list=exit res=yes 
+----
+type=PROCTITLE msg=audit(29.10.2026 09:48:51.106:121) : proctitle=useradd -m audituser 
+type=PATH msg=audit(29.10.2026 09:48:51.106:121) : item=0 name=/etc/shadow inode=653403 dev=08:01 mode=file,640 ouid=root ogid=shadow rdev=00:00 nametype=NORMAL cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0 
+type=CWD msg=audit(29.10.2026 09:48:51.106:121) : cwd=/root 
+type=SYSCALL msg=audit(29.10.2026 09:48:51.106:121) : arch=x86_64 syscall=openat success=yes exit=10 a0=0xffffff9c a1=0x5591723d50a0 a2=O_RDWR|O_NOCTTY|O_NONBLOCK|O_NOFOLLOW a3=0x0 items=1 ppid=1146 pid=1260 auid=sysadmin uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=pts0 ses=2 comm=useradd exe=/usr/sbin/useradd subj==unconfined key=etc_shadow 
+----
+type=PROCTITLE msg=audit(29.10.2026 09:48:51.146:126) : proctitle=useradd -m audituser 
+type=PATH msg=audit(29.10.2026 09:48:51.146:126) : item=4 name=/etc/shadow inode=656261 dev=08:01 mode=file,640 ouid=root ogid=shadow rdev=00:00 nametype=CREATE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0 
+type=PATH msg=audit(29.10.2026 09:48:51.146:126) : item=3 name=/etc/shadow inode=653403 dev=08:01 mode=file,640 ouid=root ogid=shadow rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0 
+type=PATH msg=audit(29.10.2026 09:48:51.146:126) : item=2 name=/etc/shadow+ inode=656261 dev=08:01 mode=file,640 ouid=root ogid=shadow rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0 
+type=PATH msg=audit(29.10.2026 09:48:51.146:126) : item=1 name=/etc/ inode=652801 dev=08:01 mode=dir,755 ouid=root ogid=root rdev=00:00 nametype=PARENT cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0 
+type=PATH msg=audit(29.10.2026 09:48:51.146:126) : item=0 name=/etc/ inode=652801 dev=08:01 mode=dir,755 ouid=root ogid=root rdev=00:00 nametype=PARENT cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0 
+type=CWD msg=audit(29.10.2026 09:48:51.146:126) : cwd=/root 
+type=SYSCALL msg=audit(29.10.2026 09:48:51.146:126) : arch=x86_64 syscall=rename success=yes exit=0 a0=0x7ffc674c3db0 a1=0x5591723d50a0 a2=0x7ffc674c3d20 a3=0x7ffc674c3b07 items=5 ppid=1146 pid=1260 auid=sysadmin uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=pts0 ses=2 comm=useradd exe=/usr/sbin/useradd subj==unconfined key=etc_shadow 
+----
+type=PROCTITLE msg=audit(29.10.2026 09:49:24.563:132) : proctitle=usermod -aG auditgroup audituser 
+type=PATH msg=audit(29.10.2026 09:49:24.563:132) : item=0 name=/etc/shadow inode=656261 dev=08:01 mode=file,640 ouid=root ogid=shadow rdev=00:00 nametype=NORMAL cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0 
+type=CWD msg=audit(29.10.2026 09:49:24.563:132) : cwd=/root 
+type=SYSCALL msg=audit(29.10.2026 09:49:24.563:132) : arch=x86_64 syscall=openat success=yes exit=6 a0=0xffffff9c a1=0x55f43141afe0 a2=O_RDWR|O_NOCTTY|O_NONBLOCK|O_NOFOLLOW a3=0x0 items=1 ppid=1146 pid=1267 auid=sysadmin uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=pts0 ses=2 comm=usermod exe=/usr/sbin/usermod subj==unconfined key=etc_shadow 
+----
+type=PROCTITLE msg=audit(29.10.2026 09:49:52.097:140) : proctitle=passwd audituser 
+type=PATH msg=audit(29.10.2026 09:49:52.097:140) : item=4 name=/etc/shadow inode=653394 dev=08:01 mode=file,640 ouid=root ogid=shadow rdev=00:00 nametype=CREATE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0 
+type=PATH msg=audit(29.10.2026 09:49:52.097:140) : item=3 name=/etc/shadow inode=656261 dev=08:01 mode=file,640 ouid=root ogid=shadow rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0 
+type=PATH msg=audit(29.10.2026 09:49:52.097:140) : item=2 name=/etc/nshadow inode=653394 dev=08:01 mode=file,640 ouid=root ogid=shadow rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0 
+type=PATH msg=audit(29.10.2026 09:49:52.097:140) : item=1 name=/etc/ inode=652801 dev=08:01 mode=dir,755 ouid=root ogid=root rdev=00:00 nametype=PARENT cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0 
+type=PATH msg=audit(29.10.2026 09:49:52.097:140) : item=0 name=/etc/ inode=652801 dev=08:01 mode=dir,755 ouid=root ogid=root rdev=00:00 nametype=PARENT cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0 
+type=CWD msg=audit(29.10.2026 09:49:52.097:140) : cwd=/root 
+type=SYSCALL msg=audit(29.10.2026 09:49:52.097:140) : arch=x86_64 syscall=rename success=yes exit=0 a0=0x7febce729fee a1=0x7febce729f76 a2=0x1c a3=0x7fff7d164be7 items=5 ppid=1146 pid=1274 auid=sysadmin uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=pts0 ses=2 comm=passwd exe=/usr/bin/passwd subj==unconfined key=etc_shadow 
